@@ -73,7 +73,7 @@ class BingX:
         return response.json()['data']
 
     def fetch_balance(self):
-        endpoint = '/openApi/contract/v1/balance'
+        endpoint = '/openApi/spot/v1/account/balance'
         params = {'timestamp': round(time.time() * 1000)}
         self.__add_signature(params)
         response = requests.get(self.base_url + endpoint, params=params, headers=self.headers)
@@ -97,11 +97,11 @@ class BingX:
 
 # ------------------------------------------------------------------------------
 #
-bingx_obj = BingX(api_key='DxseTlg1n5dXh10PvDlBCQuel8KGRPgaN4LpuTphTaarLYRwWVJuAO9wl5szpXNUI5jHbstBcyaB4Niw',
-             api_secret='CpUoGgyNFkMheijHHyQp45wWcjYoT1eBZx37hEefdfUULLaGQt4GyqkWpCyPd242FxVEM2Pjm0N6c4xlauyYA')
+# bingx_obj = BingX(api_key='DxseTlg1n5dXh10PvDlBCQuel8KGRPgaN4LpuTphTaarLYRwWVJuAO9wl5szpXNUI5jHbstBcyaB4Niw',
+#              api_secret='CpUoGgyNFkMheijHHyQp45wWcjYoT1eBZx37hEefdfUULLaGQt4GyqkWpCyPd242FxVEM2Pjm0N6c4xlauyYA')
 
-print(bingx_obj.fetch_balance())
-print(bingx_obj.create_market_order('BTC/USDT','sell',0.1))
+# print(bingx_obj.fetch_balance())
+# print(bingx_obj.create_market_order('ETH/USDT','sell',0.0004))
 
 
 # while True:
