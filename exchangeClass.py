@@ -2,6 +2,7 @@ import hmac
 import requests
 import hashlib
 import time
+from datetime import datetime, timedelta
 
 
 class Coinex:
@@ -41,13 +42,28 @@ class Coinex:
                   "market": symbol.replace('/', ''),
                   "type": order_type,
                   }
-
         self.headers['authorization'] = self.__create_signature(params)
         response = requests.post(self.base_url + endpoint, json=params, headers=self.headers)
         return response.json()
 
     # TODO: add other methods like create_limit order
 
+    def account_info(self):
+        endpoint = '/balance/info'
+        params = {'access_id': self.access_id, 'tonce': int(time.time() * 1000)}
+        self.headers['authorization'] = self.__create_signature(params)
+        response = requests.get(self.base_url + endpoint, params=params, headers=self.headers)
+        return response.json()['data']
+
+    def trade_history(self,symbol):
+        endpoint = '/order/finished'
+        start_time = int((datetime.now() - timedelta(days=364)).timestamp())
+        end_time = int(time.time())
+        params = {'access_id': self.access_id, 'tonce': int(time.time() * 1000),
+                  'start_time': start_time, 'end_time': end_time, 'page': 1, 'limit': 5, 'market':symbol.replace('/', '')}
+        self.headers['authorization'] = self.__create_signature(params)
+        response = requests.get(self.base_url + endpoint, params=params, headers=self.headers)
+        return response.json()['data']
 
 
 class BingX:
@@ -63,7 +79,7 @@ class BingX:
         sign_str = '&'.join(f'{k}={params.get(k)}' for k in sorted(params))
         sign = hmac.new(self.__api_secret.encode(), sign_str.encode(), 'sha256').hexdigest()
         params['signature'] = sign
-        return sign,sign_str
+        return sign, sign_str
 
     def fetch_order_book(self, symbol):
         endpoint = '/openApi/spot/v1/market/depth'
@@ -82,46 +98,23 @@ class BingX:
     def create_market_order(self, symbol, order_type, amount_of_order):
         endpoint = '/openApi/spot/v1/trade/order'
         params = {
-            'symbol': symbol.replace('/','-'),
+            'symbol': symbol.replace('/', '-'),
             'side': order_type.upper(),
             'type': 'MARKET',
             'quantity': amount_of_order,
             'quoteOrderQty': amount_of_order,
             'timestamp': round(time.time() * 1000)
         }
-        sign,params_str = self.__add_signature(params)
+        sign, params_str = self.__add_signature(params)
         response = requests.post(self.base_url + endpoint + f'?{params_str}&signature={sign}', headers=self.headers)
         # response = requests.post(self.base_url+endpoint, json=params ,headers=self.headers,)
-        return response.json()
+        return response.json()['data']
 
-
-# ------------------------------------------------------------------------------
-#
-# bingx_obj = BingX(api_key='DxseTlg1n5dXh10PvDlBCQuel8KGRPgaN4LpuTphTaarLYRwWVJuAO9wl5szpXNUI5jHbstBcyaB4Niw',
-#              api_secret='CpUoGgyNFkMheijHHyQp45wWcjYoT1eBZx37hEefdfUULLaGQt4GyqkWpCyPd242FxVEM2Pjm0N6c4xlauyYA')
-
-# print(bingx_obj.fetch_balance())
-# print(bingx_obj.create_market_order('ETH/USDT','sell',0.0004))
-
-
-# while True:
-#     bingX_orderbook = bingx_obj.fetch_order_book('BTC/USDT')
-#     bids_bingx = bingX_orderbook['bids'][0]
-#     asks_bingx = bingX_orderbook['asks'][0]
-#     # print(bids_bingx,'\n\n',asks_bingx,'\n------------------------\n')
-#     print({'PrBuy': asks_bingx[0], 'PrSell': bids_bingx[0], 'HajmBuy': asks_bingx[1],
-#            'HajmSell': bids_bingx[1]}, )
-#     # time.sleep(0.5)
-# # -----------------------------------------------------------------------------
-#
-#
-# coinex_obj = Coinex(
-#     'FE24639298B04CAD9B59DCB47DC26BC6',
-#     '9CCED9FB5B897A7161C0025E4FBF0272EB85C6CDD3C19C05')
-# while True:
-#     coinex_orderbook = coinex_obj.fetch_order_book('BTCUSDT')
-#     bids_coinex = coinex_orderbook['bids'][0]
-#     asks_coinex = coinex_orderbook['asks'][0]
-#     print({'PrBuy': asks_coinex[0], 'PrSell': bids_coinex[0], 'HajmBuy': asks_coinex[1],
-#            'HajmSell': bids_coinex[1]}, )
-#     time.sleep(0.5)
+    def trade_history(self,symbol):
+        endpoint = '/openApi/spot/v1/trade/historyOrders'
+        params = {'symbol': symbol.replace('/', '-'),
+                  'pageIndex': 1,'pageSize':5,
+                  'timestamp': round(time.time() * 1000)}
+        sign, params_str = self.__add_signature(params)
+        response = requests.get(self.base_url + endpoint + f'?{params_str}&signature={sign}', headers=self.headers)
+        return response.json()['data']['orders']
