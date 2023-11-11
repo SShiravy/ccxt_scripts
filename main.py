@@ -10,17 +10,17 @@ current_date = datetime.now()
 formatted_current_date = current_date.strftime("%Y%m%d")
 print(f'now {formatted_current_date} and license expire date {license_expire_date}')
 
-symbol = 'BTC/USDT'
+symbol = 'TRX/USDT'
 saf_number = 1
 create_order = False  # set True to create just one order in saf_number_price
-order_info = 'buy kucoin'  # or 'buy' and after a white space 'coinEx' or 'hitBTC' or 'kucoin' or 'bingX'
-amount_of_order = 0.00001
+order_info = 'buy coinEx'  # or 'buy' and after a white space 'coinEx' or 'hitBTC' or 'kucoin' or 'bingX'
+amount_of_order = 5
 time_delay = 1  # second
 
 # CoinEx -----------------------------
 coinex_obj = Coinex(
-    'FE24639298B04CAD9B59DCB47DC26BC6',
-    '9CCED9FB5B897A7161C0025E4FBF0272EB85C6CDD3C19C05')
+    '3F16972A5CA348C9919B80D61E87BA9E',
+    '73BF7AEA580473B535BCD28A767D358A589440FCDC3E6F32')
 
 # HitBTC -----------------------------
 hitBTC_obj = ccxt.hitbtc({
@@ -104,6 +104,7 @@ HitBTC balance: {hitBTC_obj.fetch_balance()}
 
     # create order      -------------
     if create_order:
+        order = ''
         order_type, sarafi = order_info.split()
         if sarafi == 'coinEx':
             order = coinex_obj.create_market_order(symbol, order_type, amount_of_order)
@@ -115,5 +116,6 @@ HitBTC balance: {hitBTC_obj.fetch_balance()}
             print(f"code isn't configured for '{sarafi}' to create order")
 
         create_order = False
+        print('-------///////',order,'///////----------')
 
     time.sleep(0.5)

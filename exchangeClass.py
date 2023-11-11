@@ -23,7 +23,7 @@ class Coinex:
 
     def fetch_order_book(self, symbol):
         endpoint = '/market/depth'
-        params = {'market': symbol.replace('/', ''), 'merge': 1}
+        params = {'market': symbol.replace('/', ''), 'merge': 0}
         response = requests.get(self.base_url + endpoint, params=params)
         return response.json()['data']
 
